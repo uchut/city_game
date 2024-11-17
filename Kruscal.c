@@ -2,21 +2,18 @@
 #include <stdlib.h>
 #include "kruskal.h"
 
-// °£¼± ºñ±³ ÇÔ¼ö (°¡ÁßÄ¡ ¿À¸§Â÷¼ø Á¤·Ä¿ë)
 int compareEdges(const void* a, const void* b) {
     Edge* edgeA = (Edge*)a;
     Edge* edgeB = (Edge*)b;
     return edgeA->weight - edgeB->weight;
 }
 
-// Union-Find: ºÎ¸ğ ³ëµå Ã£±â
 int find(Subset subsets[], int i) {
     if (subsets[i].parent != i)
         subsets[i].parent = find(subsets, subsets[i].parent);
     return subsets[i].parent;
 }
 
-// Union-Find: µÎ ÁıÇÕ ÇÕÄ¡±â
 void unionSets(Subset subsets[], int x, int y) {
     int rootX = find(subsets, x);
     int rootY = find(subsets, y);
@@ -33,61 +30,54 @@ void unionSets(Subset subsets[], int x, int y) {
     }
 }
 
-// KruskalÀÇ MST ¾Ë°í¸®Áò
 void kruskalMST(Graph* graph) {
     int vertices = graph->vertices;
-    Edge result[MAX_EDGES];  // ÃÖÁ¾ MST¿¡ Æ÷ÇÔµÉ °£¼± ¹è¿­
-    int e = 0;  // result ¹è¿­ÀÇ ÀÎµ¦½º
-    int i = 0;  // Á¤·ÄµÈ °£¼± ¹è¿­ÀÇ ÀÎµ¦½º
+    Edge result[MAX_EDGES];  
+    int e = 0; 
+    int i = 0;
 
-    // °£¼±À» °¡ÁßÄ¡ ¼øÀ¸·Î Á¤·Ä
     qsort(graph->edge, graph->edges, sizeof(graph->edge[0]), compareEdges);
 
-    // Union-Find¿ë Subset ÃÊ±âÈ­
     Subset* subsets = (Subset*)malloc(vertices * sizeof(Subset));
     for (int v = 0; v < vertices; ++v) {
         subsets[v].parent = v;
         subsets[v].rank = 0;
     }
 
-    // °£¼±À» ÇÏ³ª¾¿ È®ÀÎÇÏ¸ç MST¿¡ Æ÷ÇÔ
     while (e < vertices - 1 && i < graph->edges) {
         Edge nextEdge = graph->edge[i++];
 
         int x = find(subsets, nextEdge.src);
         int y = find(subsets, nextEdge.dest);
 
-        // »çÀÌÅ¬ÀÌ »ı±âÁö ¾ÊÀ¸¸é MST¿¡ Ãß°¡
         if (x != y) {
             result[e++] = nextEdge;
             unionSets(subsets, x, y);
         }
     }
 
-    // °á°ú Ãâ·Â
-    printf("ÃÖ¼Ò ½ÅÀå Æ®¸®ÀÇ °£¼±:\n");
+    printf("ìµœì†Œ ì‹ ì¥ íŠ¸ë¦¬ì˜ ê°„ì„ :\n");
     for (i = 0; i < e; ++i)
-        printf("³ëµå %d - ³ëµå %d: °¡ÁßÄ¡ %d\n", result[i].src, result[i].dest, result[i].weight);
+        printf("ë…¸ë“œ %d - ë…¸ë“œ %d: ê°€ì¤‘ì¹˜ %d\n", result[i].src, result[i].dest, result[i].weight);
 
     free(subsets);
 }
 
-// ½ÇÇà ÇÔ¼ö
 void run() {
     int vertices, edges = 0;
 
-    printf("³ëµå °³¼ö¸¦ ÀÔ·ÂÇÏ¼¼¿ä: ");
+    printf("ë…¸ë“œ ê°œìˆ˜ë¥¼ ì…ë ¥í•˜ì„¸ìš”: ");
     scanf_s("%d", &vertices);
 
     Graph* graph = (Graph*)malloc(sizeof(Graph));
     graph->vertices = vertices;
     graph->edges = 0;
 
-    printf("°¢ ³ëµå ½ÖÀÇ °¡ÁßÄ¡¸¦ ÀÔ·ÂÇÏ¼¼¿ä (¿¬°áµÇÁö ¾ÊÀº °æ¿ì -1 ÀÔ·Â):\n");
+    printf("ê° ë…¸ë“œ ìŒì˜ ê°€ì¤‘ì¹˜ë¥¼ ì…ë ¥í•˜ì„¸ìš” (ì—°ê²°ë˜ì§€ ì•Šì€ ê²½ìš° -1 ì…ë ¥):\n");
     for (int i = 0; i < vertices; ++i) {
         for (int j = i + 1; j < vertices; ++j) {
             int weight;
-            printf("³ëµå %d - ³ëµå %d: ", i, j);
+            printf("ë…¸ë“œ %d - ë…¸ë“œ %d: ", i, j);
             scanf_s("%d", &weight);
             if (weight != -1) {
                 graph->edge[edges].src = i;

@@ -3,36 +3,32 @@
 
 #define MAX_EDGES 100
 
-// °£¼±À» Ç¥ÇöÇÏ´Â ±¸Á¶Ã¼
+// ê°„ì„  êµ¬ì¡°ì²´
 typedef struct {
     int src, dest, weight;
 } Edge;
 
-// Graph ±¸Á¶Ã¼
+// Graph êµ¬ì¡°ì²´
 typedef struct {
     int vertices, edges;
     Edge edge[MAX_EDGES];
 } Graph;
 
-// Subset ±¸Á¶Ã¼ (Union-Find¿¡¼­ »ç¿ë)
+// Subset êµ¬ì¡°ì²´
 typedef struct {
     int parent;
     int rank;
 } Subset;
 
-// °£¼± ºñ±³ ÇÔ¼ö
+// ê°„ì„  ë¹„êµ í•¨ìˆ˜
 int compareEdges(const void* a, const void* b);
 
-// Union-Find: ºÎ¸ğ ³ëµå Ã£±â
 int find(Subset subsets[], int i);
 
-// Union-Find: µÎ ÁıÇÕ ÇÕÄ¡±â
 void unionSets(Subset subsets[], int x, int y);
 
-// KruskalÀÇ MST ¾Ë°í¸®Áò
 void kruskalMST(Graph* graph);
 
-// ½ÇÇà ÇÔ¼ö
 void run();
 
 #endif // KRUSKAL_H

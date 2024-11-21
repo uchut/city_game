@@ -2,21 +2,21 @@
 #include <stdlib.h>
 #include "kruskal.h"
 
-// 간선 비교 함수 (가중치 오름차순 정렬용)
+// 간선 비교 함수 
 int compareEdges(const void* a, const void* b) {
     Edge* edgeA = (Edge*)a;
     Edge* edgeB = (Edge*)b;
     return edgeA->weight - edgeB->weight;
 }
 
-// Union-Find: 부모 노드 찾기
+//  부모 노드 찾기
 int find(Subset subsets[], int i) {
     if (subsets[i].parent != i)
         subsets[i].parent = find(subsets, subsets[i].parent);
     return subsets[i].parent;
 }
 
-// Union-Find: 두 집합 합치기
+//  두 집합 합치기
 void unionSets(Subset subsets[], int x, int y) {
     int rootX = find(subsets, x);
     int rootY = find(subsets, y);
@@ -33,52 +33,76 @@ void unionSets(Subset subsets[], int x, int y) {
     }
 }
 
-Graph* initGraph(Graph* g, int v)
+void initGraph(Graph* g, int v)
 {
     g->vertices = v;
-    g->edges = (v ^ 2 * (v - 3)) / 2
+    g->edges = 0;
+    int maxedges = 0;
+    for (int i = 0; i < v; i++)
+    {
+        for (int j = i + 1; j < v; j++)
+        {
+            g->edge[g->edges].src = i;
+            g->edge[g->edges].dest = j;
+            g->edges++;
+        }
+    }
+}
+
+void initNode(Graph* g, int* n)
+{
+    int eNode = 0;
+    for (int i = 0; i < g->edges; i++)
+    {
+        g->edge[i].weight = n[i];
+        if (n[i] == -1)
+        {
+            eNode++;
+        }
+        g->edges = g->edges - eNode;
+    }
 }
 
 // Kruskal의 MST 알고리즘
-void kruskalMST(Graph* graph) {
+Edge* kruskalMST(Graph* graph) {
     int vertices = graph->vertices;
-    Edge result[MAX_EDGES];  // 최종 MST에 포함될 간선 배열
-    int e = 0;  // result 배열의 인덱스
-    int i = 0;  // 정렬된 간선 배열의 인덱스
+    Edge result[MAX_EDGES];  
+    int e = 0;
+    int i = 0; 
 
-    // 간선을 가중치 순으로 정렬
+    
     qsort(graph->edge, graph->edges, sizeof(graph->edge[0]), compareEdges);
 
-    // Union-Find용 Subset 초기화
+    
     Subset* subsets = (Subset*)malloc(vertices * sizeof(Subset));
     for (int v = 0; v < vertices; ++v) {
         subsets[v].parent = v;
         subsets[v].rank = 0;
     }
 
-    // 간선을 하나씩 확인하며 MST에 포함
+    
     while (e < vertices - 1 && i < graph->edges) {
         Edge nextEdge = graph->edge[i++];
 
         int x = find(subsets, nextEdge.src);
         int y = find(subsets, nextEdge.dest);
 
-        // 사이클이 생기지 않으면 MST에 추가
+        
         if (x != y) {
             result[e++] = nextEdge;
             unionSets(subsets, x, y);
         }
     }
 
-    // 결과 출력
-    printf("최소 신장 트리의 간선:\n");
-    for (i = 0; i < e; ++i)
-        printf("노드 %d - 노드 %d: 가중치 %d\n", result[i].src, result[i].dest, result[i].weight);
+    //printf("최소 신장 트리의 간선:\n");
+    /*for (i = 0; i < e; ++i)
+        printf("노드 %d - 노드 %d: 가중치 %d\n", result[i].src, result[i].dest, result[i].weight);*/
+    return result;
 
     free(subsets);
 }
 
-// 실행 함수
+//사용안함
 void run() {
     int vertices, edges = 0;
 

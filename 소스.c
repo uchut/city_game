@@ -25,6 +25,7 @@ typedef struct {
 typedef struct Travel_struct {
 	int node;
 	int lineSize;
+	int fullLine;
 	int line[LINESIZE];
 } Travel;
 
@@ -62,9 +63,10 @@ int findMST(MST* mst);
 void dfs(int vertex, Edge* mstEdges, int mstEdgeCount, bool* visited, Edge* tspResult, int* resultIndex, int* totalWeight);
 
 // MST를 사용한 TSP 근사 경로 생성 함수
-//int tspUsingMST(Graph* graph, Edge* tspResult);
+int tspUsingMST(Graph* graph, Edge* tspResult);
 
 
+void randomEdge(Graph* graph);
 
 //각종 함수 선언부, 함수의 메커니즘은 아래 구현부에서 확인
 void storyPrint(const char* text);
@@ -81,8 +83,8 @@ int numEquals(int num[], int budget, int num2[], MST* mst);
 int main(void) {
 	//printMapMST(1);
 	intro();	//인트로 스토리 출력 함수
-	//printMapTravel(1);
-
+	printMapTravel(1);
+	
 	return 0;
 }
 
@@ -171,16 +173,9 @@ void intro(void) {
 	else if (temp == 2) {
 		printMapMST(1);
 	}
-
-
-
-
-
-
-
-
-
 	Sleep(3000);
+
+
 	printf("\n");
 	
 }
@@ -236,7 +231,7 @@ void printMapMST(int randNum) {
 
 	
 	if (randNum == 1) {
-		
+		int budget = 0;
 		printf("\n\n=================================================================================\n\n");
 		printf("\t\t  ** A ***");
 		printf("\n\t       ***   *    ****\n\t    ***\t     *        ****\n");
@@ -257,13 +252,16 @@ void printMapMST(int randNum) {
 		printf("\n");
 
 		randomline(mst1);
+		lineWeight(mst2);
+		budget = findMST(mst2);
+		selectMST(mst2, budget);
 		Sleep(800);
 
 
 		
 	}
 	if (randNum == 2) {
-		
+		int budget = 0;
 		printf("\n\n=================================================================================\n\n");
 		printf("\t\t    A ***** B\n");
 		printf("\t\t   *         *\n");
@@ -289,6 +287,9 @@ void printMapMST(int randNum) {
 		printf("\n");
 
 		randomline(mst2);
+		lineWeight(mst2);
+		budget = findMST(mst2);
+		selectMST(mst2, budget);
 		Sleep(800);
 	}
 
@@ -299,6 +300,22 @@ void printMapMST(int randNum) {
 }
 
 void printMapTravel(int randNum) {
+	// Graph 구조체(vertices : 노드 개수, edges : 간선 개수, edge[] : 간선 가중치)
+	// { int vertices, edges; int edge[]; }
+	//제 1 Travel
+	Graph* graph1 = (Graph*)malloc(sizeof(Graph));
+	graph1->edges = 14;	graph1->vertices = 11;
+	Edge* edge1[14];
+	int i = 0;
+	for (i = 0; i < 14; i++) {
+		edge1[i] = (Edge*)malloc(sizeof(Edge));
+	}
+	
+
+	const char* type0 = "각 도로를 지을 경우 각각의 도로를 짓는데 들어가는 금액은 다음과 같다.";
+	
+	Sleep(3000);
+	System("cls");
 	if (randNum == 1) {
 		printf("\n\n=================================================================================\n\n");
 		printf("\t\t\t       A\n");
@@ -315,12 +332,44 @@ void printMapTravel(int randNum) {
 		printf("\t\t  *       ***   *     ***\n");
 		printf("\t           I         *** J ***\n");
 		printf("\n\n=================================================================================\n\n");
+		for (int i = 0; type0[i] != '\0'; i++) {
+			putchar(type0[i]);  // 한 글자씩 출력
+			Sleep(30);  // 30 밀리초 대기
+		}
+		printf("\n");
+
+		randomEdge(graph1);
+		lineWeight2(graph1);
+		//budget = findMST(mst2);
+		//selectMST(mst2, budget);
+		Sleep(800);
+		tspUsingMST(graph1, edge1);
 	}
+
+
+
+	free(edge1);
+	free(graph1);
+}
+
+//여행자 알고리즘을 위한 랜덤 가중치 투입 함수
+void randomEdge(Graph* graph) {
+	int i = 0;
+
+	//printf는 테스트용
+	//printf("%d %d", mst->node, mst->lineSize);
+
+	//mst구조체에 있는 간선마다 가중치(예산을)값을 넣음
+	srand(time(NULL));
+	for (i = 0; i < graph->edges; i++) {
+		graph->edge[i].weight = rand() % 10 + 10;
+	}
+
 }
 
 //MST간선들의 가중치를 랜덤으로 설정 하고 lineWeight()를 통해 그 값들을 출력
 void randomline(MST* mst) {
-	int i = 0, budget = 0;
+	int i = 0;
 	
 	//printf는 테스트용
 	//printf("%d %d", mst->node, mst->lineSize);
@@ -338,9 +387,7 @@ void randomline(MST* mst) {
 			mst->line[i] = -1;
 		}
 	}
-	lineWeight(mst);
-	budget = findMST(mst);
-	selectMST(mst, budget);
+	
 }
 
 //간선별 가중치(예산) 출력
@@ -357,7 +404,17 @@ void lineWeight(MST* mst) {
 		}
 	}
 }
-
+void lineWeight2(Graph* graph) {
+	int i = 0;
+	Edge* edge[MAX_EDGES];
+	for (i = 0; i < graph->edges; i++) {
+		edge[i] = (Edge*)malloc(sizeof(Edge)); // 각 Edge 객체에 동적 메모리 할당
+	}
+	
+	/*for (i = 0; i < graph->edges; ++i) {
+		printf("마을 %c - 마을 %c: 가중치 %d\n", edge[i].src + 'A', edge[i].dest + 'A', edge[i].weight);
+	}*/
+}
 //건설할 도로들의 후보중 최적의 도로들을 유저가 선택하도록 함.
 void selectMST(MST* mst, int budget) {
 	int i = 0;
@@ -555,33 +612,35 @@ int kruskalMST(Graph* graph) {
 	free(subsets);
 	return sum;
 }
-//// MST를 사용한 TSP 근사 경로 생성 함수
-//int tspUsingMST(Graph* graph, Edge* tspResult) {
-//	// MST 계산
-//	Edge* mstEdges = kruskalMST(graph);
-//	int mstEdgeCount = graph->vertices - 1;
-//
-//	// 방문 여부를 추적하기 위한 배열과 기타 필요한 변수들
-//	bool visited[MAX_VERTICES] = { false };
-//	int totalWeight = 0;
-//	int resultIndex = 0;
-//	int currentVertex = 0; // 시작 정점은 0으로 설정
-//
-//	// 시작 정점에서 DFS 시작
-//	dfs(currentVertex, mstEdges, mstEdgeCount, visited, tspResult, &resultIndex, &totalWeight);
-//
-//	// 마지막에 시작 지점으로 돌아오는 간선 추가
-//	for (int i = 0; i < graph->edges; i++) {
-//		Edge edge = graph->edge[i];
-//		if ((edge.src == currentVertex && edge.dest == 0) ||
-//			(edge.dest == currentVertex && edge.src == 0)) {
-//			tspResult[resultIndex++] = edge;
-//			totalWeight += edge.weight;
-//			break;
-//		}
-//	}
-//
-//	free(mstEdges);
-//	return totalWeight;
-//}
+
+
+// MST를 사용한 TSP 근사 경로 생성 함수
+int tspUsingMST(Graph* graph, Edge* tspResult) {
+	// MST 계산
+	Edge* mstEdges = kruskalMST(graph);
+	int mstEdgeCount = graph->vertices - 1;
+
+	// 방문 여부를 추적하기 위한 배열과 기타 필요한 변수들
+	bool visited[MAX_VERTICES] = { false };
+	int totalWeight = 0;
+	int resultIndex = 0;
+	int currentVertex = 0; // 시작 정점은 0으로 설정
+
+	// 시작 정점에서 DFS 시작
+	dfs(currentVertex, mstEdges, mstEdgeCount, visited, tspResult, &resultIndex, &totalWeight);
+
+	// 마지막에 시작 지점으로 돌아오는 간선 추가
+	for (int i = 0; i < graph->edges; i++) {
+		Edge edge = graph->edge[i];
+		if ((edge.src == currentVertex && edge.dest == 0) ||
+			(edge.dest == currentVertex && edge.src == 0)) {
+			tspResult[resultIndex++] = edge;
+			totalWeight += edge.weight;
+			break;
+		}
+	}
+
+	free(mstEdges);
+	return totalWeight;
+}
 

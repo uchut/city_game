@@ -33,23 +33,29 @@ void unionSets(Subset subsets[], int x, int y) {
     }
 }
 
-void initGraph(Graph* g, int v)
+void initGraph(Graph* g, int v, int* n)
 {
     g->vertices = v;
     g->edges = 0;
+    int count = 0;
     int maxedges = 0;
-    for (int i = 0; i < v; i++)
+    for (int i = 0; i < v; ++i)
     {
-        for (int j = i + 1; j < v; j++)
+        for (int j = i + 1; j < v; ++j)
         {
-            g->edge[g->edges].src = i;
-            g->edge[g->edges].dest = j;
-            g->edges++;
+            if (n[count] != -1)
+            {
+                g->edge[g->edges].src = i;
+                g->edge[g->edges].dest = j;
+                g->edge[g->edges].weight = n[count];
+                g->edges++;
+            }
+            count++;
         }
     }
 }
 
-void initNode(Graph* g, int* n)
+/*void initNode(Graph* g, int* n)
 {
     int eNode = 0;
     for (int i = 0; i < g->edges; i++)
@@ -59,9 +65,9 @@ void initNode(Graph* g, int* n)
         {
             eNode++;
         }
-        g->edges = g->edges - eNode;
     }
-}
+    g->edges = g->edges - eNode;
+}*/
 
 // Kruskal의 MST 알고리즘
 Edge* kruskalMST(Graph* graph) {
